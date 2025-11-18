@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chat App</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #440404;
+        padding: 0;
+        margin: 0;
+      }
+      div {
+        height: 450px;
+        width: 600px;
+      }
+      #chat-container {
+        width: 600px;
+        margin: 50px auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 5px;
+      }
+      #messages {
+        list-style: none;
+        padding: 0;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      #messages p {
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+        margin: 0;
+      }
+      form {
+        display: flex;
+        margin-top: 10px;
+      }
+      input[type="text"],
+      input[type="file"] {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-right: none;
+      }
+      button {
+        size: 20px;
+        padding: 10px 15px;
+        border: none;
+        background: #6b0303;
+        color: #fff;
+        cursor: pointer;
+      }
+      h4 {
+        margin: 10px 5px;
+        color: aliceblue;
+      }
+      .file-link {
+        color: rgb(27, 27, 163);
+        text-decoration: underline;
+      }
+      img.uploaded-image {
+        max-width: 100%;
+        max-height: 120px;
+        display: block;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h4>Enter your name</h4>
+    <input type="text" id="nameInput" placeholder="Your name" />
+    <button onclick="sendUserName()">Save</button>
+
+    <div id="chat-container">
+      <ul id="messages"></ul>
+
+      <form id="form">
+        <input id="input" autocomplete="off" placeholder="Type a message..." />
+        <button>Send</button>
+      </form>
+
+      <h5>Send a file</h5>
+      <input type="file" id="fileInput" />
+      <button onclick="sendFile()">Send File</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      function sendUserName() {
+        const name = document.getElementById("nameInput").value;
+        if (name.trim() !== "") {
+          socket.emit("userName", name);
+          console.log("User name sent:", name);
+        } else {
+          alert("Please enter a name.");
+        }
+      }
+
+      const form = document.getElementById("form");
+      const input = document.getElementById("input");
+      const messages = document.getElementById("messages");
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (input.value) {
+          socket.emit("chat message", input.value);
+          input.value = "";
+        }
+      });
+
+      socket.on("chat message", (msg) => {
+        const item = document.createElement("p");
+        item.textContent = msg;
+        messages.appendChild(item);
+        messages.scrollTop = messages.scrollHeight;
+      });
+
+      socket.on("file upload", (data) => {
+        const item = document.createElement("p");
+
+        const label = document.createTextNode(
+          `${data.sender || "Anonymous"} sent a file: ${data.fileName}`
+        );
+        item.appendChild(label);
+
+        if (data.fileName.match(/\.(jpeg|jpg|gif|png)$/i)) {
+          const img = document.createElement("img");
+          img.src = data.fileData;
+          img.alt = data.fileName;
+          img.className = "uploaded-image";
+          item.appendChild(document.createElement("br"));
+          item.appendChild(img);
+        } else {
+          const link = document.createElement("a");
+          link.href = data.fileData;
+          link.download = data.fileName;
+          link.textContent = "Download file";
+          link.className = "file-link";
+          item.appendChild(document.createElement("br"));
+          item.appendChild(link);
+        }
+
+        messages.appendChild(item);
+        messages.scrollTop = messages.scrollHeight;
+      });
+
+      function sendFile() {
+        const fileInput = document.getElementById("fileInput");
+        const file = fileInput.files[0];
+        if (!file) {
+          alert("Please choose a file first.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function () {
+          const base64Data = reader.result;
+          socket.emit("file upload", {
+            fileName: file.name,
+            fileData: base64Data,
+          });
+          console.log("File sent:", file.name);
+          fileInput.value = "";
+        };
+        reader.readAsDataURL(file);
+      }
+    </script>
+  </body>
+</html>
