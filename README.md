@@ -1,12 +1,12 @@
-A simple browser-based live chat interface built with HTML and JavaScript. Implements real-time messaging UI and interactive elements, demonstrating frontend development skills.
+# Live_chat_With_Js
 
-Tech Stack: HTML, CSS, JavaScript
-Features:
+A lightweight browser-based live chat interface built with **HTML** and **JavaScript**. Demonstrates frontend skills with interactive messaging UI.
 
-Real-time chat UI
+**Tech Stack:** HTML, CSS, JavaScript  
+**Features:**  
+- Real-time chat interface  
+- Interactive message input and display  
+- Simple and responsive frontend application
 
-Interactive message input and display
+**GitHub Link:** https://github.com/DevAraf/Live_chat_With_Js
 
-Simple, lightweight frontend application
-
-GitHub: https://github.com/DevAraf/Live_chat_With_Js
